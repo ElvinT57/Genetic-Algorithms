@@ -1,5 +1,5 @@
 class DNA{
-   char[] genes = new char[18];
+   char[] genes = new char[target.length()];
    float fitness;
    
    DNA(){
