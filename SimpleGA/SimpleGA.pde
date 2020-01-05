@@ -7,17 +7,17 @@ int numIterations = 0;
 
 
 DNA[] population;
-int populationSize = 100;
+int populationSize = 200;
 
 float mutationRate = 0.01;
 ArrayList<DNA> matingPool = new ArrayList<DNA>();
 
 void setup() {
-  size(550,350);
+  size(550, 350);
   background(255);
-  
+
   population = new DNA[populationSize];
-  
+
   for (int i = 0; i < population.length; i++) {
     population[i] = new DNA();
   }
@@ -25,15 +25,26 @@ void setup() {
 
 void draw() {
   background(255);
-  
-  for (int i = 0; i < population.length; i++){
+
+  for (int i = 0; i < population.length; i++) {
     population[i].fitness();
-    if(population[i].fitness > bestFitness){
-       bestFitness = population[i].fitness;
-       bestIndex = i;
+    if (population[i].fitness > bestFitness) {
+      bestFitness = population[i].fitness;
+      bestIndex = i;
     }
   }
-      
+
+  // check if we've arrived at an answer
+  if (bestFitness == 1) {
+    background(0);
+    fill(255);
+    text("MATCH FOUND!!", 10, 225);
+    println("Result: " +population[bestIndex].getPhrase());
+    println("Solution Index: " + bestIndex);
+    println("Number of iterations: " + numIterations);
+    exit();
+  }
+
   //build mating pool
   for (int i = 0; i < population.length; i++) {
     int n = int(population[i].fitness * 100);
@@ -60,36 +71,28 @@ void draw() {
     DNA child = parentA.crossover(parentB);
 
     child.mutate();
-    
+
     population[i] = child;
   }
-  
+
   numIterations++;
   showStats();
   matingPool.clear();  //make sure we clear the matingpool, no polygomy.
-  
-  if(bestFitness == 1){
-     background(0,255,0);
-     fill(255,255,0);
-     text("MATCH FOUND!!", 10, 225);
-  }
 }
 
-void showStats(){
+void showStats() {
   fill(0);
   textSize(24);
-  
+
   text("Best Result So far: ", 10, 25);
   text(population[bestIndex].getPhrase(), 250, 25);
-  
+
   text("Best fitness so far: ", 10, 75);
   text(bestFitness, 250, 75);
-  
+
   text("Number of iterations: ", 10, 125);
   text(numIterations, 275, 125);
-  
+
   text("Mutation rate: ", 10, 175);
   text(mutationRate, 250, 175);
-  
-  
 }
