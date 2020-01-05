@@ -9,7 +9,7 @@ int numIterations = 0;
 DNA[] population;
 int populationSize = 200;
 
-float mutationRate = 0.01;
+float mutationRate = 0.03;
 ArrayList<DNA> matingPool = new ArrayList<DNA>();
 
 void setup() {

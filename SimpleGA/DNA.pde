@@ -15,7 +15,7 @@ class DNA{
              score++;
          }
       }
-      fitness = float(score)/target.length();
+      fitness = float(score*score)/(target.length() * target.length());
    }
    
    DNA crossover(DNA partner){
