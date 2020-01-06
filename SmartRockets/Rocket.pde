@@ -2,18 +2,31 @@ class Rocket {
   PVector loc;
   PVector vel;
   PVector acc;
-  PVector origin;  //where the rockets will start
   float fitness = 0;
   DNA dna;
   int geneCounter = 0;
   float theta = 0; //the angle the rocket is facing
 
-  Rocket(PVector origin){
-    loc = origin;
-    this.origin = origin;
+  Rocket(){
+    loc = new PVector(origin.x, origin.y);
     vel = new PVector(0,0);
     acc = new PVector(0,0);
     dna = new DNA();
+  }
+  
+  Rocket(DNA childDNA){
+    loc = new PVector(origin.x, origin.y);
+    vel = new PVector(0,0);
+    acc = new PVector(0,0);
+    dna = childDNA;
+  }
+  
+  float getFitness(){
+    return fitness;
+  }
+  
+  DNA getDNA(){
+    return dna;  
   }
   
   void applyForce(PVector f) {
@@ -32,22 +45,8 @@ class Rocket {
    * considering our goal
    */
   void fitness() {
-    float d = PVector.dist(loc, target);
-    fitness = 1/d;  // the inverse propotional to distance
-  }
-
-  Rocket crossover(Rocket partner) {
-    Rocket child = new Rocket(this.origin);
-
-    //selecting from midpoint
-    int midpoint = int(random(dna.len()));
-
-    for (int i = 0; i < dna.len(); i++) {
-      if ( i > midpoint ) child.dna.getGenes()[i] = dna.getGenes()[i];
-      else child.dna.getGenes()[i] = partner.dna.getGenes()[i];
-    }
-
-    return child;
+    float d = dist(loc.x, loc.y, target.x, target.y);
+    fitness = pow(1/d, 2);
   }
 
   /**
@@ -68,8 +67,10 @@ class Rocket {
     rectMode(CENTER);
     translate(loc.x, loc.y);
     rotate(theta);
+    strokeWeight(1);
+    stroke(0);
     fill(175);
-    triangle(0, 5, 15, 0, 0, -5);
+    triangle(0, 5, 12, 0, 0, -5);
     //restore
     popMatrix();
   }

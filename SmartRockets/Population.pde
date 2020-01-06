@@ -3,8 +3,9 @@ class Population {
   Rocket[] population;
   ArrayList<Rocket> matingPool;
   int generations;
+  int bestFitnessIndex;
 
-  Population(float mutationRate, int size, PVector origin){
+  Population(float mutationRate, int size){
     this.mutationRate = mutationRate;  
     population = new Rocket[size];
     generations = 0;
@@ -12,7 +13,7 @@ class Population {
     
     // intialize each rocket
     for( int i = 0; i < population.length; i++){
-       population[i] = new Rocket(origin); 
+       population[i] = new Rocket(); 
     }
   }
   
@@ -21,12 +22,39 @@ class Population {
       population[i].fitness();
     }
   }
-
-  void selection() {
+  
+  int getGenerations(){
+     return generations; 
+  }
+  
+  // Find highest fintess for the population
+  float getMaxFitness() {
+    float record = 0;
     for (int i = 0; i < population.length; i++) {
-      int n = int(population[i].fitness * 1000);
-      println(n);
-      println(population[i].fitness);
+       if(population[i].getFitness() > record) {
+         record = population[i].getFitness();
+         bestFitnessIndex = i;
+       }
+    }
+    return record;
+  }
+
+  PVector[] getBestRoute(){
+    return population[bestFitnessIndex].getDNA().getGenes();
+  }
+  
+  void selection() {
+    // clear our mating pool for the next generation
+    matingPool.clear();
+    
+    // retireve the max fitness of our population
+    float maxFitness = getMaxFitness();
+    
+    for (int i = 0; i < population.length; i++) {
+      // normalize each member's fitness to calculate the number
+      // of times it will be added to the mating pool
+      float normalFitness = map(population[i].getFitness(), 0, maxFitness, 0, 1);
+      int n = int(normalFitness * 100);
       for (int j = 0; j < n; j++) {
         matingPool.add(population[i]);
       }
@@ -48,13 +76,13 @@ class Population {
         parentB = matingPool.get(b);
       } while (parentA != parentB);
 
-      Rocket child = parentA.crossover(parentB);
+      DNA child = parentA.dna.crossover(parentB.dna);
 
-      child.dna.mutate(mutationRate);
+      child.mutate(mutationRate);
 
-      population[i] = child;
+      population[i] = new Rocket(child);
     }
-    matingPool.clear();
+    generations++;
   }
   
   void live(){
