@@ -3,53 +3,53 @@ class Population {
   Rocket[] population;
   ArrayList<Rocket> matingPool;
   int generations;
-  int bestFitnessIndex;
+  int bestFitnessIndex = 0;
+  float bestFitness = 0;
 
-  Population(float mutationRate, int size){
+  Population(float mutationRate, int size) {
     this.mutationRate = mutationRate;  
     population = new Rocket[size];
     generations = 0;
     matingPool = new ArrayList<Rocket>();
-    
+
     // intialize each rocket
-    for( int i = 0; i < population.length; i++){
-       population[i] = new Rocket(); 
+    for ( int i = 0; i < population.length; i++) {
+      population[i] = new Rocket();
     }
-  }
-  
-  void fitness() {
-    for (int i = 0; i < population.length; i++) {
-      population[i].fitness();
-    }
-  }
-  
-  int getGenerations(){
-     return generations; 
-  }
-  
-  // Find highest fintess for the population
-  float getMaxFitness() {
-    float record = 0;
-    for (int i = 0; i < population.length; i++) {
-       if(population[i].getFitness() > record) {
-         record = population[i].getFitness();
-         bestFitnessIndex = i;
-       }
-    }
-    return record;
   }
 
-  PVector[] getBestRoute(){
-    return population[bestFitnessIndex].getDNA().getGenes();
+  void fitness() {
+    for (int i = 0; i < population.length; i++) {
+      // if the member collided, ignore and continue
+      if (population[i].stopped)
+        continue;
+
+      population[i].fitness();
+      if (population[i].getFitness() > bestFitness) {
+        bestFitness = population[i].getFitness();
+        bestFitnessIndex = i;
+      }
+    }
   }
-  
+
+  int getGenerations() {
+    return generations;
+  }
+
+  PVector[] getBestRoute() {
+    if (bestFitnessIndex == -1)
+      return null;
+    else
+      return population[bestFitnessIndex].getDNA().getGenes();
+  }
+
   void selection() {
     // clear our mating pool for the next generation
     matingPool.clear();
-    
+
     // retireve the max fitness of our population
-    float maxFitness = getMaxFitness();
-    
+    float maxFitness = bestFitness;
+
     for (int i = 0; i < population.length; i++) {
       // normalize each member's fitness to calculate the number
       // of times it will be added to the mating pool
@@ -62,6 +62,12 @@ class Population {
   }
 
   void reproduction() {
+    // if all members could not perform, restart population
+    if (matingPool.isEmpty()) {
+      restartPopulation();
+      return;
+    }
+
     Rocket parentA;
     Rocket parentB;
 
@@ -77,17 +83,25 @@ class Population {
       } while (parentA != parentB);
 
       DNA child = parentA.dna.crossover(parentB.dna);
-
       child.mutate(mutationRate);
 
       population[i] = new Rocket(child);
     }
     generations++;
   }
-  
-  void live(){
-     for(int i = 0; i < population.length; i++){
-        population[i].run(); 
-     }
+
+  void live() {
+    for (int i = 0; i < population.length; i++) {
+      population[i].run();
+    }
+  }
+
+  void restartPopulation() {
+    // intialize each rocket
+    for ( int i = 0; i < population.length; i++) {
+      population[i] = new Rocket();
+    }
+    // reset best fitness index
+    bestFitness = -1;
   }
 }
